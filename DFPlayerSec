@@ -1,0 +1,137 @@
+#include <Arduino.h>
+#include <SoftwareSerial.h>
+#include <DFRobotDFPlayerMini.h>
+DFRobotDFPlayerMini myDFPlayer; 
+SoftwareSerial comm(10,11);
+DFRobotDFPlayerMini mp3;
+
+int BUSY = 4;
+int ESTADOBUSY = 0;
+int cont = 0;
+
+
+void setup() {
+  Serial.begin(9600);
+  comm.begin(9600);
+  mp3.begin(comm);
+  pinMode(BUSY,INPUT);       // pin 4 modulo esta sonando
+ 
+
+  void printDetail(uint8_t type, int value);
+  Serial.println();
+  Serial.println(F("DFRobot DFPlayer Mini"));
+  Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
+  
+  
+  if (!myDFPlayer.begin(comm)) {  //Use softwareSerial to communicate with mp3.
+    Serial.println(F("Unable to begin:"));
+    Serial.println(F("1.Please recheck the connection!"));
+    Serial.println(F("2.Please insert the SD card!"));
+    while(true){
+      delay(0); // Code to compatible with ESP8266 watch dog.
+    }
+
+  
+    
+  }
+  Serial.println(F("DFPlayer Mini online."));
+  
+  myDFPlayer.volume(20);  //Set volume value. From 0 to 30
+  myDFPlayer.play(1);  //Play the first mp3
+}
+
+
+
+void loop() {
+  
+     if (cont == 0){
+        mp3.start();
+        cont=(cont+1);
+      delay(2000) ;
+     } 
+     
+      ESTADOBUSY = digitalRead(BUSY);
+      delay(1000) ;   
+      //mp3.start();  //Play the first mp3
+    if (ESTADOBUSY == HIGH){
+      delay (4000) ; //demora de un segundo
+     cont = (cont+1);
+     Serial.println(cont);
+     mp3.next(); 
+     //mp3.start();      
+     Serial.println("Nex");
+     delay (4000); 
+     Serial.println("while");
+     if (cont == 30){    //numero de canciones antes del bucle
+     cont = 0;
+     mp3.stop();
+     myDFPlayer.play(1);  //Play the first mp3
+     delay(2000);
+     Serial.println("paso por aqui");
+    }
+   
+    }
+    
+ }
+
+
+void printDetail(uint8_t type, int value){
+  switch (type) {
+    case TimeOut:
+      Serial.println(F("Time Out!"));
+      break;
+    case WrongStack:
+      Serial.println(F("Stack Wrong!"));
+      break;
+    case DFPlayerCardInserted:
+      Serial.println(F("Card Inserted!"));
+      break;
+    case DFPlayerCardRemoved:
+      Serial.println(F("Card Removed!"));
+      break;
+    case DFPlayerCardOnline:
+      Serial.println(F("Card Online!"));
+      break;
+    case DFPlayerUSBInserted:
+      Serial.println("USB Inserted!");
+      break;
+    case DFPlayerUSBRemoved:
+      Serial.println("USB Removed!");
+      break;
+    case DFPlayerPlayFinished:
+      Serial.print(F("Number:"));
+      Serial.print(value);
+      Serial.println(F(" Play Finished!"));
+      break;
+    case DFPlayerError:
+      Serial.print(F("DFPlayerError:"));
+      switch (value) {
+        case Busy:
+          Serial.println(F("tarjeta no encomtrada"));
+          break;
+        case Sleeping:
+          Serial.println(F("Dormido"));
+          break;
+        case SerialWrongStack:
+          Serial.println(F("Se equivoca de pila"));
+          break;
+        case CheckSumNotMatch:
+          Serial.println(F("Compruebe que lq sumq no coincide"));
+          break;
+        case FileIndexOut:
+          Serial.println(F("Indice de archivos fuera de los limites"));
+          break;
+        case FileMismatch:
+          Serial.println(F("No se puede encontrar el archivo"));
+          break;
+        case Advertise:
+          Serial.println(F("En publicidad"));
+          break;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
+  }
+}
