@@ -15,7 +15,8 @@ void setup() {
   comm.begin(9600);
   mp3.begin(comm);
   pinMode(BUSY,INPUT);       // pin 4 modulo esta sonando
- 
+  delay(20000) //demora para estabilizat el sensor
+ Serial.println("OK")
 
   void printDetail(uint8_t type, int value);
   Serial.println();
